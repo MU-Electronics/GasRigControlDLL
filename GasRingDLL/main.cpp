@@ -47,8 +47,25 @@ int32_t __declspec(dllexport) ReadFlowRate(int32_t COM, int32_t Baud, uint8_t ID
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) SetFlowRate(int32_t id, double flowRate)
+typedef int32_t(__cdecl* SetFlowRateDef)(int32_t COM, int32_t Baud, uint8_t IDH, uint8_t IDM, uint8_t IDL, uint8_t IDS, uint8_t SetPointCode, float SetPoint, uint8_t *S1, uint8_t *S2);
+int32_t __declspec(dllexport) SetFlowRate(int32_t COM, int32_t Baud, uint8_t IDH, uint8_t IDM, uint8_t IDL, uint8_t IDS, uint8_t SetPointCode, float SetPoint, uint8_t *S1, uint8_t *S2)
 {
+	HMODULE BrooksDLL = LoadLibrary(L"BrooksDLL.dll");
+
+	if(BrooksDLL != NULL)
+	{
+		SetFlowRateDef SetFlow = (SetFlowRateDef)GetProcAddress(BrooksDLL, "WriteSetPoint");
+
+		if(SetFlow != NULL)
+		{
+			int32_t Set = SetFlow(COM, Baud, IDH, IDM, IDL, IDS, SetPointCode, SetPoint, S1, S2);
+
+			return Set;
+		}
+
+		return 1;
+	}
+
 	return 0;
 }
 
