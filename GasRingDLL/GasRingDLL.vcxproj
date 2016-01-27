@@ -84,16 +84,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <Library Include="..\..\..\..\..\..\..\Program Files (x86)\National Instruments\LabVIEW 2015\cintools\labview.lib" />
+    <Library Include="LabJackUD.lib" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DigitalExtControl.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PressureSensor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DigitalExtControl.h" />
+    <ClInclude Include="LabJackUD.h" />
     <ClInclude Include="PressureSensor.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BrooksDLL.dll" />
+    <None Include="LJUDDotNet.dll" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

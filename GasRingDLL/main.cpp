@@ -2,6 +2,8 @@
 #include <afxmt.h>
 #include <extcode.h>
 #include "PressureSensor.h"
+#include "DigitalExtControl.h"
+extern "C" { int _afxForceUSRDLL; } 
 
 /**
  * This function adds two numbers together and is used for debugging to ensure the DLL is working (will be removed)

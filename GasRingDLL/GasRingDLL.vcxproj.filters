@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\..\..\..\..\..\Program Files (x86)\National Instruments\LabVIEW 2015\cintools\labview.lib" />
+    <Library Include="LabJackUD.lib" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -24,13 +25,23 @@
     <ClCompile Include="PressureSensor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DigitalExtControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PressureSensor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DigitalExtControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LabJackUD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="BrooksDLL.dll" />
+    <None Include="LJUDDotNet.dll" />
   </ItemGroup>
 </Project>
