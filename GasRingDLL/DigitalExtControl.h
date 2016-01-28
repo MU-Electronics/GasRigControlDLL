@@ -6,18 +6,25 @@
 
 #include "LabJackUD.h"
 #include <string>
+#include <map>
 
 class DigitalExtControl
 {
 private:
-	bool OpenConnection(void);
+	LJ_HANDLE lngHandle;
+	LJ_ERROR lngErrorcode;
+	long lngGetNextIteration;
+	bool OpenConnection(bool defaultPins);
+	bool CloseConnection();
 	long ErrorHandler(LJ_ERROR lngErrorcode, long lngLineNumber, long lngIteration);
+	bool Execute(void);
 public:
+	std::map<int, double> data;
 	DigitalExtControl(void);
 	~DigitalExtControl(void);
-	bool DigitalOut(int pin);
-	bool DigitalRead(int pin);
-	
+	double DigitalOut(int pin, int logic);
+	double DigitalRead(int pin);
+	bool ResetPins(void);
 };
 
 

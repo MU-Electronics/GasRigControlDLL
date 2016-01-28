@@ -78,7 +78,11 @@ int32_t __declspec(dllexport) SetFlowRate(int32_t COM, int32_t Baud, uint8_t IDH
  */
 int32_t __declspec(dllexport) OpenValve(int32_t id)
 {
-	return 0;
+	DigitalExtControl* hardware = new DigitalExtControl(); 
+	
+	double valve = hardware->DigitalOut(id, 1);
+
+	return 1;
 }
 
 /**
@@ -88,7 +92,11 @@ int32_t __declspec(dllexport) OpenValve(int32_t id)
  */
 int32_t __declspec(dllexport) CloseValve(int32_t id)
 {
-	return 0;
+	DigitalExtControl* hardware = new DigitalExtControl(); 
+	
+	double valve = hardware->DigitalOut(id, 0);
+
+	return (int) valve;
 }
 
 /**
