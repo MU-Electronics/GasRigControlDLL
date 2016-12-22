@@ -3,7 +3,12 @@
 #include <extcode.h>
 #include "PressureSensor.h"
 #include "DigitalExtControl.h"
+#include "TC110Communicator.h"
+#include "string.h"
 extern "C" { int _afxForceUSRDLL; } 
+
+TC110Communicator* TC110;
+PressureSensor* Pressure;
 
 /**
  * This function adds two numbers together and is used for debugging to ensure the DLL is working (will be removed)
@@ -71,6 +76,10 @@ int32_t __declspec(dllexport) SetFlowRate(int32_t COM, int32_t Baud, uint8_t IDH
 	return 0;
 }
 
+
+
+
+
 /**
  * This function opens a valve via the labjack digital outout pin
  *
@@ -100,45 +109,43 @@ int32_t __declspec(dllexport) CloseValve(int32_t id)
 }
 
 /**
- * This function turns on the turbo pump vacuum station 
+ * This function reads the vacuum pressure guage
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) TurboPumpOn()
+int32_t __declspec(dllexport) ReadVacPressure()
 {
-	return 0;
-}
-
-/**
- * This function turns on the turbo pump vacuum station 
- *
- * @author Sam Mottley <sam.mottley@manchester.ac.uk>
- */
-int32_t __declspec(dllexport) TurboPumpOff()
-{
-	return 0;
-}
-
-/**
- * This function returns a pressure reading from the keller pressure sensor
- *
- * @author Sam Mottley <sam.mottley@manchester.ac.uk>
- */
-double __declspec(dllexport) ReadPressure()
-{
-	PressureSensor PressureSensor;
+	DigitalExtControl* hardware = new DigitalExtControl(); 
 	
+	double valve = hardware->AnalougRead(0);
+
+	return (int) valve;
+}
+
+
+
+
+
+/**
+ * Set up pressure sensor connection
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+int32_t __declspec(dllexport) PressureConnection(char *com, int32_t id)
+{
+	Pressure = new PressureSensor();
+
 	// Init Communication
-	PressureSensor.m_nDevice= 250;
-	PressureSensor.InitCommunication();
+	Pressure->m_nDevice= 250;
+	Pressure->InitCommunication();
 
 	// Set the port
 	CString S = "COM2"; LPTSTR lpsz = new TCHAR[S.GetLength()+1]; _tcscpy(lpsz, S);	
 	_u32 baud = 9600;
-	PressureSensor._bEcho= false;
+	Pressure->_bEcho= false;
 
 	// Open Com Port
-	PressureSensor.OpenCommPort(lpsz, baud);
+	Pressure->OpenCommPort(lpsz, baud);
 
 	// Set default values
 	_u8 nClass;
@@ -150,11 +157,48 @@ double __declspec(dllexport) ReadPressure()
 	_u32 nSN;
 
 	// Wake up the device
-	PressureSensor.F48(&nClass, &nGroup, &nYear, &nWeek, &nBuffer, &nState);
+	Pressure->F48(&nClass, &nGroup, &nYear, &nWeek, &nBuffer, &nState);
+	Sleep(200);
+
+	return 1;
+}
+
+/**
+ * Set up pressure sensor connection
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+int32_t __declspec(dllexport) PressureConnectionClose()
+{
+	// Close the com port
+	Pressure->CloseCommPort();
+
+	return 1;
+}
+
+/**
+ * This function returns a pressure reading from the keller pressure sensor
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+double __declspec(dllexport) ReadPressure()
+{
+
+	// Set default values
+	_u8 nClass;
+	_u8 nGroup;
+	_u8 nYear; 
+	_u8 nWeek;
+	_u8 nBuffer;
+	_u8 nState;
+	_u32 nSN;
+
+	// Wake up the device
+	Pressure->F48(&nClass, &nGroup, &nYear, &nWeek, &nBuffer, &nState);
 	Sleep(200);
 
 	// Initialise the device
-	int nRes= PressureSensor.F48(&nClass, &nGroup, &nYear, &nWeek, &nBuffer, &nState);
+	int nRes= Pressure->F48(&nClass, &nGroup, &nYear, &nWeek, &nBuffer, &nState);
 
 	// Check the answer
 	if(nRes!= COMM_OK) {
@@ -164,15 +208,157 @@ double __declspec(dllexport) ReadPressure()
 	// Read the acutal value
 	float fVal;
 	int channel = 1;
-	int nRess= PressureSensor.F73(channel, &fVal);
+	int nRess= Pressure->F73(channel, &fVal);
 
 	// Check the answer
 	if(nRess != COMM_OK) {
 		return 0;
 	}
 
-	// Close the com port
-	PressureSensor.CloseCommPort();
-
 	return fVal;
 }
+
+
+
+
+
+/**
+ * Set up turbo pump connection
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+int32_t __declspec(dllexport) PumpConnection(char *com, int32_t id)
+{
+	TC110 = new TC110Communicator(com, (int) id); //    "\\\\.\\COM12"
+
+	if(TC110->IsConnected())
+		return 1;
+
+	return 0;
+}
+
+/**
+ * This function retrieves temperatures from the vac station
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+int32_t __declspec(dllexport) VacStationTemperature(int32_t type)
+{
+	return 0;
+}
+
+/**
+ * This function retrieves currently set gas mode
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+int32_t __declspec(dllexport) GasMode()
+{
+	return 0;
+}
+
+/**
+ * This function sets the state of the turbo 
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+int32_t __declspec(dllexport) TurboState()
+{
+	return 0;
+}
+
+/**
+ * This function retrieves the turbo speed
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+int32_t __declspec(dllexport) TurboSpeed(int32_t type)
+{
+	return 0;
+}
+
+/**
+ * This function retrieves error log
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+void __declspec(dllexport) Error(int32_t id, char* buffer)
+{
+	char bufferContent[] = "Err006";
+
+	// Put into buffer
+	for(int i = 0; i < 6; ++i)
+		buffer[i] = bufferContent[i];
+}
+
+/**
+ * This function retrieves the backing pump mode
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+int32_t __declspec(dllexport) BackingPumpMode(int32_t type)
+{
+	return 0;
+}
+
+/**
+ * This function retrieves the pumping state
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+int32_t __declspec(dllexport) PumpingState()
+{
+	return 0;
+}
+
+
+/**
+ * This function sets the set gas mode
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+int32_t __declspec(dllexport) SetGasMode(int32_t mode)
+{
+	return 0;
+}
+
+/**
+ * This function sets the backing pump mode
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+int32_t __declspec(dllexport) SetBackingPumpMode(int32_t mode)
+{
+	return 0;
+}
+
+/**
+ * This function sets whether the turbo pump is enbaled or not
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+int32_t __declspec(dllexport) SetTurboPumpState(int32_t mode)
+{
+	return 0;
+}
+
+/**
+ * This function turns on the vac station on and off
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+int32_t __declspec(dllexport) SetPumping(int32_t onOff)
+{
+	return 0;
+}
+
+/**
+ * This function sets the turbo speed
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+int32_t __declspec(dllexport) SetTurboSpeed(int32_t speed)
+{
+	return 0;
+}
+

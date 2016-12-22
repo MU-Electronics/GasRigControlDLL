@@ -208,4 +208,27 @@ double DigitalExtControl::DigitalRead(int pin)
 	return false;
 }
 
+/**
+ * Read a analogue input
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+double DigitalExtControl::AnalougRead(int pin)
+{
+	// Open a connection
+	this->OpenConnection(false);
 
+	// Set value of port
+	lngErrorcode = AddRequest (lngHandle, LJ_ioGET_AIN, (long) pin, 0, 0, 0);
+	if(this->ErrorHandler(lngErrorcode, __LINE__, 0) == 0)
+	{
+		// Execute set commands
+		if(this->Execute() == true){
+			double toReturn = this->data[0];
+			this->CloseConnection();
+			return toReturn;
+		}	
+	}
+	
+	return false;
+}

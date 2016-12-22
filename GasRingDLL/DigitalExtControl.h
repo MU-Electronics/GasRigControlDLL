@@ -25,6 +25,7 @@ public:
 	double DigitalOut(int pin, int logic);
 	double DigitalRead(int pin);
 	bool ResetPins(void);
+	double AnalougRead(int pin);
 };
 
 
