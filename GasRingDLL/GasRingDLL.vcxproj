@@ -90,11 +90,13 @@
     <ClCompile Include="DigitalExtControl.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PressureSensor.cpp" />
+    <ClCompile Include="TC110Communicator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DigitalExtControl.h" />
     <ClInclude Include="LabJackUD.h" />
     <ClInclude Include="PressureSensor.h" />
+    <ClInclude Include="TC110Communicator.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BrooksDLL.dll" />

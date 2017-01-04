@@ -5,6 +5,8 @@
 #include "DigitalExtControl.h"
 #include "TC110Communicator.h"
 #include "string.h"
+#include <sstream>
+#include <iostream>
 extern "C" { int _afxForceUSRDLL; } 
 
 TC110Communicator* TC110;
@@ -15,7 +17,7 @@ PressureSensor* Pressure;
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) plus(double a, double b, double *out)
+extern "C" int32_t __declspec(dllexport) plus(double a, double b, double *out)
 {
 	*out = a + b;
 
@@ -28,7 +30,7 @@ int32_t __declspec(dllexport) plus(double a, double b, double *out)
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
 typedef int32_t(__cdecl* ReadFlowDef)(int32_t COM, int32_t Baud, uint8_t IDH, uint8_t IDM, uint8_t IDL, uint8_t IDS, float *Flow, uint8_t *FlowUnit, uint8_t *S1, uint8_t *S2);
-int32_t __declspec(dllexport) ReadFlowRate(int32_t COM, int32_t Baud, uint8_t IDH, uint8_t IDM, uint8_t IDL, uint8_t IDS, float *Flow, uint8_t *FlowUnit, uint8_t *S1, uint8_t *S2)
+extern "C" int32_t __declspec(dllexport) ReadFlowRate(int32_t COM, int32_t Baud, uint8_t IDH, uint8_t IDM, uint8_t IDL, uint8_t IDS, float *Flow, uint8_t *FlowUnit, uint8_t *S1, uint8_t *S2)
 {
 	HMODULE BrooksDLL = LoadLibrary(L"BrooksDLL.dll");
 
@@ -55,7 +57,7 @@ int32_t __declspec(dllexport) ReadFlowRate(int32_t COM, int32_t Baud, uint8_t ID
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
 typedef int32_t(__cdecl* SetFlowRateDef)(int32_t COM, int32_t Baud, uint8_t IDH, uint8_t IDM, uint8_t IDL, uint8_t IDS, uint8_t SetPointCode, float SetPoint, uint8_t *S1, uint8_t *S2);
-int32_t __declspec(dllexport) SetFlowRate(int32_t COM, int32_t Baud, uint8_t IDH, uint8_t IDM, uint8_t IDL, uint8_t IDS, uint8_t SetPointCode, float SetPoint, uint8_t *S1, uint8_t *S2)
+extern "C" int32_t __declspec(dllexport) SetFlowRate(int32_t COM, int32_t Baud, uint8_t IDH, uint8_t IDM, uint8_t IDL, uint8_t IDS, uint8_t SetPointCode, float SetPoint, uint8_t *S1, uint8_t *S2)
 {
 	HMODULE BrooksDLL = LoadLibrary(L"BrooksDLL.dll");
 
@@ -85,7 +87,7 @@ int32_t __declspec(dllexport) SetFlowRate(int32_t COM, int32_t Baud, uint8_t IDH
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) OpenValve(int32_t id)
+extern "C" int32_t __declspec(dllexport) OpenValve(int32_t id)
 {
 	DigitalExtControl* hardware = new DigitalExtControl(); 
 	
@@ -99,7 +101,7 @@ int32_t __declspec(dllexport) OpenValve(int32_t id)
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) CloseValve(int32_t id)
+extern "C" int32_t __declspec(dllexport) CloseValve(int32_t id)
 {
 	DigitalExtControl* hardware = new DigitalExtControl(); 
 	
@@ -113,7 +115,7 @@ int32_t __declspec(dllexport) CloseValve(int32_t id)
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) ReadVacPressure()
+extern "C" int32_t __declspec(dllexport) ReadVacPressure()
 {
 	DigitalExtControl* hardware = new DigitalExtControl(); 
 	
@@ -131,8 +133,19 @@ int32_t __declspec(dllexport) ReadVacPressure()
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) PressureConnection(char *com, int32_t id)
+extern "C" int32_t __declspec(dllexport) PressureConnection(int32_t com, int32_t id)
 {
+	std::stringstream ss;
+	if(com > 10){
+		std::string comport = "\\\\.\\COM";
+		ss << comport << com;
+	}else{
+		std::string comport = "COM";
+		ss << comport << com;
+	}
+	std::string fullcomPort = ss.str();
+
+
 	Pressure = new PressureSensor();
 
 	// Init Communication
@@ -140,7 +153,7 @@ int32_t __declspec(dllexport) PressureConnection(char *com, int32_t id)
 	Pressure->InitCommunication();
 
 	// Set the port
-	CString S = "COM2"; LPTSTR lpsz = new TCHAR[S.GetLength()+1]; _tcscpy(lpsz, S);	
+	CString S = fullcomPort.c_str(); LPTSTR lpsz = new TCHAR[S.GetLength()+1]; _tcscpy(lpsz, S);	
 	_u32 baud = 9600;
 	Pressure->_bEcho= false;
 
@@ -168,7 +181,7 @@ int32_t __declspec(dllexport) PressureConnection(char *com, int32_t id)
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) PressureConnectionClose()
+extern "C" int32_t __declspec(dllexport) PressureConnectionClose()
 {
 	// Close the com port
 	Pressure->CloseCommPort();
@@ -181,7 +194,7 @@ int32_t __declspec(dllexport) PressureConnectionClose()
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-double __declspec(dllexport) ReadPressure()
+extern "C" double __declspec(dllexport) ReadPressure()
 {
 
 	// Set default values
@@ -227,11 +240,34 @@ double __declspec(dllexport) ReadPressure()
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) PumpConnection(char *com, int32_t id)
+extern "C" int32_t __declspec(dllexport) PumpConnection(int32_t com, int32_t id)
 {
-	TC110 = new TC110Communicator(com, (int) id); //    "\\\\.\\COM12"
+	std::stringstream ss;
+	if(com > 10){
+		std::string comport = "\\\\.\\COM";
+		ss << comport << com;
+	}else{
+		std::string comport = "COM";
+		ss << comport << com;
+	}
+	std::string fullcomPort = ss.str();
+
+	TC110 = new TC110Communicator(fullcomPort.c_str() , (int) id); //    "\\\\.\\COM12"
 
 	if(TC110->IsConnected())
+		return 1;
+
+	return 0;
+}
+
+/**
+ * Close the pump connection
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+extern "C" int32_t __declspec(dllexport) PumpConnectionClose(void)
+{
+	if(!TC110->Close())
 		return 1;
 
 	return 0;
@@ -242,9 +278,14 @@ int32_t __declspec(dllexport) PumpConnection(char *com, int32_t id)
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) VacStationTemperature(int32_t type)
+extern "C" int32_t __declspec(dllexport) VacStationTemperature(int32_t type)
 {
-	return 0;
+	if(type >= 1 && type <= 4){
+		int temperature = TC110->GetTemperature((int) type);
+		return temperature;
+	}
+		
+	return 999;
 }
 
 /**
@@ -252,19 +293,21 @@ int32_t __declspec(dllexport) VacStationTemperature(int32_t type)
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) GasMode()
+extern "C" int32_t __declspec(dllexport) GasMode()
 {
-	return 0;
+	int gasMode = TC110->GetGasMode();
+	return gasMode;
 }
 
 /**
- * This function sets the state of the turbo 
+ * This function gets the state of the turbo 
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) TurboState()
+extern "C" int32_t __declspec(dllexport) TurboState()
 {
-	return 0;
+	int turboState = TC110->GetTurboPumpState();
+	return turboState;
 }
 
 /**
@@ -272,9 +315,14 @@ int32_t __declspec(dllexport) TurboState()
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) TurboSpeed(int32_t type)
+extern "C" int32_t __declspec(dllexport) TurboSpeed(int32_t type)
 {
-	return 0;
+	if(type >= 1 && type <= 4){
+		int turboSpeed = TC110->GetTurboSpeed((int) type);
+		return turboSpeed;
+	}
+
+	return 999;
 }
 
 /**
@@ -282,13 +330,19 @@ int32_t __declspec(dllexport) TurboSpeed(int32_t type)
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-void __declspec(dllexport) Error(int32_t id, char* buffer)
+extern "C" void __declspec(dllexport) Error(int32_t id, char* buffer)
 {
-	char bufferContent[] = "Err006";
 
-	// Put into buffer
+	if(id >= 1 && id <= 10){
+		std::string bufferContent = TC110->GetError((int) id);
+		for(int i = 0; i < 6; ++i)
+			buffer[i] = bufferContent[i];
+	}
+
+	char bufferContent[] = "Err999";
 	for(int i = 0; i < 6; ++i)
 		buffer[i] = bufferContent[i];
+	
 }
 
 /**
@@ -296,9 +350,10 @@ void __declspec(dllexport) Error(int32_t id, char* buffer)
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) BackingPumpMode(int32_t type)
+extern "C" int32_t __declspec(dllexport) BackingPumpMode()
 {
-	return 0;
+	int backingPumpMode = TC110->GetBackingPumpMode();
+	return backingPumpMode;
 }
 
 /**
@@ -306,9 +361,10 @@ int32_t __declspec(dllexport) BackingPumpMode(int32_t type)
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) PumpingState()
+extern "C" int32_t __declspec(dllexport) PumpingState()
 {
-	return 0;
+	int pumpingState = TC110->GetPumpingState();
+	return pumpingState;
 }
 
 
@@ -317,8 +373,14 @@ int32_t __declspec(dllexport) PumpingState()
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) SetGasMode(int32_t mode)
+extern "C" int32_t __declspec(dllexport) SetGasMode(int32_t mode)
 {
+	if(mode >= 0 && mode <= 2){
+		if(TC110->SetGasMode((int) mode)){
+			return 1;
+		}
+	}
+
 	return 0;
 }
 
@@ -327,8 +389,14 @@ int32_t __declspec(dllexport) SetGasMode(int32_t mode)
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) SetBackingPumpMode(int32_t mode)
+extern "C" int32_t __declspec(dllexport) SetBackingPumpMode(int32_t mode)
 {
+	if(mode >= 0 && mode <= 3){
+		if(TC110->SetBackingPumpMode((int) mode)){
+			return 1;
+		}
+	}
+
 	return 0;
 }
 
@@ -337,8 +405,14 @@ int32_t __declspec(dllexport) SetBackingPumpMode(int32_t mode)
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) SetTurboPumpState(int32_t mode)
+extern "C" int32_t __declspec(dllexport) SetTurboPumpState(int32_t mode)
 {
+	if(mode >= 0 && mode <= 1){
+		if(TC110->SetTurboPumpState((int) mode)){
+			return 1;
+		}
+	}
+
 	return 0;
 }
 
@@ -347,8 +421,14 @@ int32_t __declspec(dllexport) SetTurboPumpState(int32_t mode)
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) SetPumping(int32_t onOff)
+extern "C" int32_t __declspec(dllexport) SetPumping(int32_t onOff)
 {
+	if(onOff >= 0 && onOff <= 1){
+		if(TC110->SetPumpingState((int) onOff)){
+			return 1;
+		}
+	}
+
 	return 0;
 }
 
@@ -357,7 +437,7 @@ int32_t __declspec(dllexport) SetPumping(int32_t onOff)
  *
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  */
-int32_t __declspec(dllexport) SetTurboSpeed(int32_t speed)
+extern "C" int32_t __declspec(dllexport) SetTurboSpeed(int32_t speed)
 {
 	return 0;
 }

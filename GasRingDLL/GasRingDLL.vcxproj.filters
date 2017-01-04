@@ -28,6 +28,9 @@
     <ClCompile Include="DigitalExtControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TC110Communicator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PressureSensor.h">
@@ -37,6 +40,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LabJackUD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TC110Communicator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -39,7 +39,7 @@ private:
 
 public:
 	// Start the communication
-	TC110Communicator(char *portName, int id);
+	TC110Communicator(const char *portName, int id);
 
 	// Close class and communication link
 	~TC110Communicator(void);

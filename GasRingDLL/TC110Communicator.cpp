@@ -13,7 +13,7 @@
  * @author Sam Mottley <sam.mottley@manchester.ac.uk>
  * @param char $portName The name of the windows port
  */
-TC110Communicator::TC110Communicator(char *portName, int id)
+TC110Communicator::TC110Communicator(const char *portName, int id)
 {
 	// Not connected yet
 	this->connected = false;
@@ -21,8 +21,13 @@ TC110Communicator::TC110Communicator(char *portName, int id)
 	// Set turbo station id
 	this->id = id;
 
+	// format convert
+	wchar_t portBuffer[20];
+	std::mbstowcs(portBuffer, portName, strlen(portName)+1);//Plus null
+	LPWSTR port = portBuffer;
+
 	// Try to connect to the given port throuh CreateFile
-	this->hSerial = CreateFile(portName,
+	this->hSerial = CreateFile(port,
 			GENERIC_READ | GENERIC_WRITE,
 			0,
 			NULL,
@@ -38,7 +43,7 @@ TC110Communicator::TC110Communicator(char *portName, int id)
 			//Print Error if neccessary
 			printf("ERROR: Handle was not attached. Reason: %s not available.\n", portName);
 		}else{
-			printf("ERROR: Check error.");
+			printf("ERROR: Check error."); std::cout<<GetLastError()<<std::endl;
 		}
 	}
 	else
@@ -292,11 +297,20 @@ bool TC110Communicator::Close()
 		//We're no longer connected
 		this->connected = false;
 
+		//We wait 2s for resetting
+		Sleep(200);
+
 		//Close the serial handler
-		CloseHandle(this->hSerial);
+		if(this->hSerial != INVALID_HANDLE_VALUE) {
+			CloseHandle(this->hSerial);
+			this->hSerial = INVALID_HANDLE_VALUE;
+		}
+
+		//We wait 2s for resetting
+		Sleep(200);
 	}
 
-	return true;
+	return this->connected;
 }
 
 
