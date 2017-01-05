@@ -10,6 +10,7 @@
  */
 DigitalExtControl::DigitalExtControl(void)
 {
+	this->OpenConnection(false);
 }
 
 /**
@@ -19,6 +20,7 @@ DigitalExtControl::DigitalExtControl(void)
  */
 DigitalExtControl::~DigitalExtControl(void)
 {
+	this->CloseConnection();
 }
 
 
@@ -92,12 +94,6 @@ bool DigitalExtControl::Execute(void)
 	
 }
 
-
-
-
-
-
-
 /**
  * Open a connection to the slave hardware to be controlled
  *
@@ -116,11 +112,19 @@ bool DigitalExtControl::OpenConnection(bool defaultPins)
 		if(defaultPins)
 			this->ResetPins();
 
+		this->connected = true;
+
 		return true;
 	}
 
 	return false;
 }
+
+
+
+
+
+
 
 /**
  * Closes a connection to the slave hardware
@@ -131,6 +135,23 @@ bool DigitalExtControl::CloseConnection()
 {
 	// Define vars
 	data.clear();
+
+	Close();
+
+	return true;
+}
+
+
+/**
+ * Check if connected
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+bool DigitalExtControl::isConnected()
+{
+	if(this->connected){
+		return true;
+	}
 
 	return false;
 }
@@ -159,22 +180,21 @@ bool DigitalExtControl::ResetPins()
 double DigitalExtControl::DigitalOut(int pin, int logic)
 {
 	// Open a connection
-	this->OpenConnection(false);
+	//this->OpenConnection(false);
 
-	// Set pin to digital
-	// @todo
-
-	// Set value of port
-	lngErrorcode = AddRequest(lngHandle, LJ_ioPUT_DIGITAL_BIT, (long) pin, (double) logic, 0, 0);
-	if(this->ErrorHandler(lngErrorcode, __LINE__, 0) == 0)
-	{
-		// Execute set commands
-		if(this->Execute() == true){
-			double toReturn = this->data[0];
-			this->CloseConnection();
-			return toReturn;
-		}
+	if(this->connected){
+		// Set value of port
+		lngErrorcode = AddRequest(lngHandle, LJ_ioPUT_DIGITAL_BIT, (long) pin, (double) logic, 0, 0);
+		if(this->ErrorHandler(lngErrorcode, __LINE__, 0) == 0)
+		{
+			// Execute set commands
+			if(this->Execute() == true){
+				double toReturn = this->data[0];
+				this->CloseConnection();
+				return toReturn;
+			}
 			 	
+		}
 	}
 	
 	return false;
@@ -188,21 +208,20 @@ double DigitalExtControl::DigitalOut(int pin, int logic)
 double DigitalExtControl::DigitalRead(int pin)
 {
 	// Open a connection
-	this->OpenConnection(false);
+	//this->OpenConnection(false);
 
-	// Set pin to digital input
-	// @todo
-
-	// Set value of port
-	lngErrorcode = AddRequest (lngHandle, LJ_ioGET_DIGITAL_BIT, (long) pin, 0, 0, 0);
-	if(this->ErrorHandler(lngErrorcode, __LINE__, 0) == 0)
-	{
-		// Execute set commands
-		if(this->Execute() == true){
-			double toReturn = this->data[0];
-			this->CloseConnection();
-			return toReturn;
-		}	
+	if(this->connected){
+		// Set value of port
+		lngErrorcode = AddRequest (lngHandle, LJ_ioGET_DIGITAL_BIT, (long) pin, 0, 0, 0);
+		if(this->ErrorHandler(lngErrorcode, __LINE__, 0) == 0)
+		{
+			// Execute set commands
+			if(this->Execute() == true){
+				double toReturn = this->data[0];
+				this->CloseConnection();
+				return toReturn;
+			}	
+		}
 	}
 	
 	return false;
@@ -216,18 +235,20 @@ double DigitalExtControl::DigitalRead(int pin)
 double DigitalExtControl::AnalougRead(int pin)
 {
 	// Open a connection
-	this->OpenConnection(false);
+	//this->OpenConnection(false);
 
-	// Set value of port
-	lngErrorcode = AddRequest (lngHandle, LJ_ioGET_AIN, (long) pin, 0, 0, 0);
-	if(this->ErrorHandler(lngErrorcode, __LINE__, 0) == 0)
-	{
-		// Execute set commands
-		if(this->Execute() == true){
-			double toReturn = this->data[0];
-			this->CloseConnection();
-			return toReturn;
-		}	
+	if(this->connected){
+		// Set value of port
+		lngErrorcode = AddRequest (lngHandle, LJ_ioGET_AIN, (long) pin, 0, 0, 0);
+		if(this->ErrorHandler(lngErrorcode, __LINE__, 0) == 0)
+		{
+			// Execute set commands
+			if(this->Execute() == true){
+				double toReturn = this->data[0];
+				this->CloseConnection();
+				return toReturn;
+			}	
+		}
 	}
 	
 	return false;

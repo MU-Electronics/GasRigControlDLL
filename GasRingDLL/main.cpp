@@ -11,6 +11,7 @@ extern "C" { int _afxForceUSRDLL; }
 
 TC110Communicator* TC110;
 PressureSensor* Pressure;
+DigitalExtControl* hardware; 
 
 /**
  * This function adds two numbers together and is used for debugging to ensure the DLL is working (will be removed)
@@ -81,6 +82,22 @@ extern "C" int32_t __declspec(dllexport) SetFlowRate(int32_t COM, int32_t Baud, 
 
 
 
+/**
+ * This function opens a connection to the lab jack
+ *
+ * @author Sam Mottley <sam.mottley@manchester.ac.uk>
+ */
+extern "C" int32_t __declspec(dllexport) OpenConnection(int32_t id)
+{
+	hardware = new DigitalExtControl(); 
+
+	if(hardware->isConnected()){
+		return 1;
+	}
+
+	return 0;
+}
+
 
 /**
  * This function opens a valve via the labjack digital outout pin
@@ -89,8 +106,6 @@ extern "C" int32_t __declspec(dllexport) SetFlowRate(int32_t COM, int32_t Baud, 
  */
 extern "C" int32_t __declspec(dllexport) OpenValve(int32_t id)
 {
-	DigitalExtControl* hardware = new DigitalExtControl(); 
-	
 	double valve = hardware->DigitalOut(id, 1);
 
 	return 1;
@@ -103,8 +118,6 @@ extern "C" int32_t __declspec(dllexport) OpenValve(int32_t id)
  */
 extern "C" int32_t __declspec(dllexport) CloseValve(int32_t id)
 {
-	DigitalExtControl* hardware = new DigitalExtControl(); 
-	
 	double valve = hardware->DigitalOut(id, 0);
 
 	return (int) valve;
@@ -117,8 +130,6 @@ extern "C" int32_t __declspec(dllexport) CloseValve(int32_t id)
  */
 extern "C" int32_t __declspec(dllexport) ReadVacPressure()
 {
-	DigitalExtControl* hardware = new DigitalExtControl(); 
-	
 	double valve = hardware->AnalougRead(0);
 
 	return (int) valve;
